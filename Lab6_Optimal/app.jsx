@@ -1,60 +1,125 @@
 import { useState } from "react";
 
-function TodoFunction() {
-  const [tasks, setTasks] = useState([]);
-  const [taskInput, setTaskInput] = useState("");
+function Form() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
-  const addTask = () => {
-    if (taskInput.trim()) {
-      setTasks([...tasks, { text: taskInput, completed: false }]);
-      setTaskInput("");
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [submittedData, setSubmittedData] = useState(null);
+
+  const validate = () => {
+    let err = {};
+
+    if (!formData.name) {
+      err.name = "Name is required";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email) {
+      err.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      err.email = "Enter valid email";
+    }
+
+    const passRegex =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{6,}$/;
+
+    if (!formData.password) {
+      err.password = "Password is required";
+    } else if (!passRegex.test(formData.password)) {
+      err.password =
+        "Min 6 chars, 1 uppercase, 1 number, 1 special char";
+    }
+
+    setErrors(err);
+    return Object.keys(err).length === 0;
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (validate()) {
+      setSubmittedData(formData);
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+      });
     }
   };
 
-  const toggleTask = (index) => {
-    setTasks(
-      tasks.map((task, i) =>
-        i === index ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const deleteTask = (index) => {
-    setTasks(tasks.filter((_, i) => i !== index));
-  };
-
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>React To-Do List</h1>
+    <div className="form-container">
+      <h2>Registration Form</h2>
 
-      <input
-        type="text"
-        value={taskInput}
-        onChange={(e) => setTaskInput(e.target.value)}
-        placeholder="Enter a task..."
-      />
+      <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="text"
+            name="name"
+            placeholder="Enter name"
+            value={formData.name}
+            onChange={handleChange}
+          />
+          <p>{errors.name}</p>
+        </div>
 
-      <button onClick={addTask}>Add Task</button>
+        <div>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <p>{errors.email}</p>
+        </div>
 
-      <ul style={{ listStyle: "none" }}>
-        {tasks.map((task, index) => (
-          <li
-            key={index}
-            style={{
-              textDecoration: task.completed ? "line-through" : "none",
-            }}
-          >
-            <span onClick={() => toggleTask(index)}>
-              {task.completed ? "✔ " : "❌ "}
-              {task.text}
-            </span>
+        <div>
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="Enter password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+          <p>{errors.password}</p>
+        </div>
 
-            <button onClick={() => deleteTask(index)}>🗑</button>
-          </li>
-        ))}
-      </ul>
+        <label>
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={() => setShowPassword(!showPassword)}
+          />
+          Show Password
+        </label>
+
+        <br />
+        <button type="submit">Submit</button>
+      </form>
+
+      {submittedData && (
+        <div>
+          <h3>Submitted Data</h3>
+          <p>Name: {submittedData.name}</p>
+          <p>Email: {submittedData.email}</p>
+          <p>Password: {submittedData.password}</p>
+        </div>
+      )}
     </div>
   );
 }
 
-export default TodoFunction;
+export default Form;
